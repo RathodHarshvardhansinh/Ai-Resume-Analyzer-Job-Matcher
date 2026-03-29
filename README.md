@@ -1,5 +1,5 @@
 # 🎓 ResumeAI — Resume Analyzer & Job Matcher
-## College Project by [Your Name]
+## College Project by Rathod Harshvardhansinh
 
 ---
 
