@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -433,4 +433,38 @@
 </script>
 <script type="module" src="firebase.js"></script>
 </body>
-</html>
+</html> -->
+
+<script type="module">
+import { auth, db } from './firebase-config.js';
+import { doc, getDoc } from "firebase/firestore";
+
+auth.onAuthStateChanged(async (user) => {
+  if (!user) return window.location.href = "login.html";
+
+  const userDoc = doc(db, "users", user.uid);
+  const docSnap = await getDoc(userDoc);
+
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+
+    // Update Dashboard
+    document.getElementById('welcome-name').textContent = data.name || "User";
+    document.getElementById('user-name').textContent = data.name || "User";
+    document.getElementById('avatar-initials').textContent = (data.name || "U").charAt(0).toUpperCase();
+    
+    document.getElementById('dashAtsScore').textContent = data.atsScore + '%';
+    document.getElementById('dashSkillsHave').innerHTML = data.skillsFound.map(s => `<span class="skill-pill have">${s}</span>`).join('');
+    document.getElementById('dashSkillsMissing').innerHTML = data.skillsMissing.map(s => `<span class="skill-pill missing">${s}</span>`).join('');
+  } else {
+    console.log("No user data found in Firestore");
+  }
+});
+
+function logout() {
+  auth.signOut().then(() => {
+    localStorage.clear();
+    window.location.href = 'login.html';
+  });
+}
+</script>
