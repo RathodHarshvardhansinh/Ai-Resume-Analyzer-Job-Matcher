@@ -1,4 +1,4 @@
-<!-- <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -435,21 +435,7 @@
 </body>
 </html> -->
 
-<script type="module">
-import { auth, db } from './firebase-config.js';
-import { doc, getDoc } from "firebase/firestore";
-
-auth.onAuthStateChanged(async (user) => {
-  if (!user) return window.location.href = "login.html";
-
-  const userDoc = doc(db, "users", user.uid);
-  const docSnap = await getDoc(userDoc);
-
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-
-    // Update Dashboard
-    document.getElementById('welcome-name').textContent = data.name || "User";
+').textContent = data.name || "User";
     document.getElementById('user-name').textContent = data.name || "User";
     document.getElementById('avatar-initials').textContent = (data.name || "U").charAt(0).toUpperCase();
     
@@ -467,4 +453,4 @@ function logout() {
     window.location.href = 'login.html';
   });
 }
-</script>
+
