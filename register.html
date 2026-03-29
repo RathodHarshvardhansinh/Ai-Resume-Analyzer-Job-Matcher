@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeAI - Register</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f; --card: #12121a; --border: #1e1e2e;
+    --accent: #6c63ff; --accent2: #ff6584; --text: #e8e8f0; --muted: #6b6b8a; --success: #4ade80;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 30px 20px;
+    overflow-x: hidden;
+  }
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0;
+    background-image: linear-gradient(rgba(108,99,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(108,99,255,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .blob { position: fixed; border-radius: 50%; filter: blur(80px); z-index: 0; opacity: 0.12; }
+  .blob1 { width:350px; height:350px; background:#6c63ff; top:-80px; right:-80px; animation: float 9s ease-in-out infinite; }
+  .blob2 { width:280px; height:280px; background:#ff6584; bottom:-60px; left:-60px; animation: float 7s ease-in-out infinite reverse; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-25px)} }
+
+  .wrapper { position: relative; z-index: 1; width: 100%; max-width: 520px; }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--muted); text-decoration: none; font-size: 14px;
+    margin-bottom: 24px; transition: color 0.3s;
+  }
+  .back-btn:hover { color: var(--text); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 24px; padding: 40px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+  }
+  .card-header { text-align: center; margin-bottom: 32px; }
+  .logo-badge {
+    width: 56px; height: 56px; background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px;
+    margin: 0 auto 16px; box-shadow: 0 0 30px rgba(108,99,255,0.4);
+  }
+  .card-header h2 { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; }
+  .card-header p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+
+  .role-section { margin-bottom: 28px; }
+  .role-section label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .role-card {
+    border: 2px solid var(--border); border-radius: 14px; padding: 16px;
+    cursor: pointer; transition: all 0.3s; text-align: center;
+    background: var(--bg);
+  }
+  .role-card:hover { border-color: rgba(108,99,255,0.4); }
+  .role-card.selected { border-color: var(--accent); background: rgba(108,99,255,0.1); }
+  .role-card .role-emoji { font-size: 28px; margin-bottom: 6px; }
+  .role-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .role-card p { font-size: 11px; color: var(--muted); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { margin-bottom: 16px; }
+  label.field-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; color: var(--muted); }
+  input, select {
+    width: 100%; padding: 13px 16px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 12px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    transition: all 0.3s; outline: none;
+  }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,0.15); }
+  input::placeholder { color: var(--muted); }
+  select option { background: var(--card); }
+
+  .password-strength { margin-top: 8px; }
+  .strength-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; margin-bottom: 4px; }
+  .strength-fill { height: 100%; border-radius: 2px; width: 0; transition: all 0.4s; }
+  .strength-text { font-size: 11px; color: var(--muted); }
+
+  .terms {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin: 20px 0; font-size: 13px; color: var(--muted);
+  }
+  .terms input[type=checkbox] { width: auto; margin-top: 2px; accent-color: var(--accent); }
+
+  .btn-register {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    border: none; border-radius: 12px; color: white;
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.3s; letter-spacing: 0.5px;
+  }
+  .btn-register:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(108,99,255,0.45); }
+
+  .login-link { text-align: center; font-size: 14px; color: var(--muted); margin-top: 20px; }
+  .login-link a { color: var(--accent); font-weight: 600; text-decoration: none; }
+
+  .step-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 28px; }
+  .step { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all 0.3s; }
+  .step.active { background: var(--accent); width: 24px; border-radius: 4px; }
+  .step.done { background: var(--success); }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<div class="wrapper">
+  <a href="login.html" class="back-btn">← Back to Login</a>
+  <div class="card">
+    <div class="card-header">
+      <div class="logo-badge">R</div>
+      <h2>Create Account ✨</h2>
+      <p>Join ResumeAI — it's free!</p>
+    </div>
+
+    <div class="step-indicator">
+      <div class="step active" id="s1"></div>
+      <div class="step" id="s2"></div>
+      <div class="step" id="s3"></div>
+    </div>
+
+    <!-- Role Selection -->
+    <div class="role-section">
+      <label>I am a...</label>
+      <div class="role-cards">
+        <div class="role-card selected" id="rc-seeker" onclick="selectRole('jobseeker')">
+          <div class="role-emoji">🧑‍💼</div>
+          <h4>Job Seeker</h4>
+          <p>Find jobs & analyze resume</p>
+        </div>
+        <div class="role-card" id="rc-recruiter" onclick="selectRole('recruiter')">
+          <div class="role-emoji">🏢</div>
+          <h4>Recruiter</h4>
+          <p>Post jobs & find candidates</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="field-label">First Name</label>
+        <input type="text" id="fname" placeholder="Rahul">
+      </div>
+      <div class="form-group">
+        <label class="field-label">Last Name</label>
+        <input type="text" id="lname" placeholder="Sharma">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="field-label">Email Address</label>
+      <input type="email" id="email" placeholder="rahul@example.com">
+    </div>
+
+    <div class="form-group">
+      <label class="field-label">Phone Number</label>
+      <input type="tel" id="phone" placeholder="+91 98765 43210">
+    </div>
+
+    <div class="form-group" id="college-group">
+      <label class="field-label">College / University</label>
+      <input type="text" id="college" placeholder="SVIT, Vasad">
+    </div>
+
+    <div class="form-group" id="company-group" style="display:none">
+      <label class="field-label">Company Name</label>
+      <input type="text" id="company" placeholder="TCS, Infosys...">
+    </div>
+
+    <div class="form-group">
+      <label class="field-label">Password</label>
+      <input type="password" id="password" placeholder="Min 8 characters" oninput="checkStrength(this.value)">
+      <div class="password-strength">
+        <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+        <div class="strength-text" id="strength-text">Enter password</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="field-label">Confirm Password</label>
+      <input type="password" id="confirm-password" placeholder="Re-enter password">
+    </div>
+
+    <div class="terms">
+      <input type="checkbox" id="terms-check">
+      <span>I agree to the <a href="#" style="color:var(--accent)">Terms of Service</a> and <a href="#" style="color:var(--accent)">Privacy Policy</a></span>
+    </div>
+
+    <button class="btn-register" onclick="doRegister()">Create My Account →</button>
+    <div class="login-link">Already have an account? <a href="login.html">Login</a></div>
+  </div>
+</div>
+
+<script>
+  function registerUser(){
+
+let name=document.getElementById("name").value
+let email=document.getElementById("email").value
+let password=document.getElementById("password").value
+let role=document.getElementById("role").value
+
+let users = JSON.parse(localStorage.getItem("users")) || []
+
+let exists = users.find(u => u.email === email)
+
+if(exists){
+alert("User already exists")
+return
+}
+
+users.push({
+name:name,
+email:email,
+password:password,
+role:role
+})
+
+localStorage.setItem("users",JSON.stringify(users))
+
+alert("Registration Successful")
+
+window.location.href="login.html"
+
+}
+  let selectedRole = 'jobseeker';
+  function selectRole(role) {
+    selectedRole = role;
+    document.getElementById('rc-seeker').classList.toggle('selected', role === 'jobseeker');
+    document.getElementById('rc-recruiter').classList.toggle('selected', role === 'recruiter');
+    document.getElementById('college-group').style.display = role === 'jobseeker' ? 'block' : 'none';
+    document.getElementById('company-group').style.display = role === 'recruiter' ? 'block' : 'none';
+  }
+
+  function checkStrength(val) {
+    const fill = document.getElementById('strength-fill');
+    const text = document.getElementById('strength-text');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const colors = ['#ef4444','#f97316','#eab308','#4ade80'];
+    const labels = ['Weak','Fair','Good','Strong'];
+    fill.style.width = (score * 25) + '%';
+    fill.style.background = colors[score-1] || '#ef4444';
+    text.textContent = val.length === 0 ? 'Enter password' : (labels[score-1] || 'Too short');
+    text.style.color = colors[score-1] || 'var(--muted)';
+  }
+
+  function doRegister() {
+    const fname = document.getElementById('fname').value;
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('password').value;
+    const conf = document.getElementById('confirm-password').value;
+    const terms = document.getElementById('terms-check').checked;
+    if (!fname || !email || !pass) { alert('Please fill all required fields!'); return; }
+    if (pass !== conf) { alert('Passwords do not match!'); return; }
+    if (!terms) { alert('Please accept the terms and conditions!'); return; }
+    if (pass.length < 8) { alert('Password must be at least 8 characters!'); return; }
+    const steps = ['s1','s2','s3'];
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < steps.length) {
+        document.getElementById(steps[i]).classList.remove('active');
+        document.getElementById(steps[i]).classList.add('done');
+        if (i + 1 < steps.length) document.getElementById(steps[i+1]).classList.add('active');
+        i++;
+      } else {
+        clearInterval(interval);
+        localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('userRole', selectedRole);
+        localStorage.setItem('userName', fname);
+        localStorage.setItem('userEmail', email);
+        alert('🎉 Account created successfully!');
+        if (selectedRole === 'recruiter') window.location.href = 'recruiter-dashboard.html';
+        else window.location.href = 'dashboard.html';
+      }
+    }, 400);
+  }
+</script>
+<script type="module" src="firebase.js"></script>
+</body>
+</html>

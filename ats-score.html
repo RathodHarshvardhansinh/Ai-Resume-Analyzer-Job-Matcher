@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeAI - ATS Score</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0f;--sidebar:#0e0e16;--card:#12121a;--border:#1e1e2e;--accent:#6c63ff;--text:#e8e8f0;--muted:#6b6b8a;--success:#4ade80;--warning:#fbbf24;--danger:#f87171;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;}
+  .sidebar{width:240px;background:var(--sidebar);border-right:1px solid var(--border);padding:28px 20px;display:flex;flex-direction:column;gap:8px;position:fixed;left:0;top:0;bottom:0;z-index:10;}
+  .sidebar-brand{display:flex;align-items:center;gap:12px;padding:0 8px;margin-bottom:28px;}
+  .sidebar-logo{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;}
+  .sidebar-brand span{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;cursor:pointer;transition:all 0.3s;text-decoration:none;color:var(--muted);font-size:14px;}
+  .nav-item:hover{background:rgba(108,99,255,0.08);color:var(--text);}
+  .nav-item.active{background:rgba(108,99,255,0.15);color:var(--accent);font-weight:600;}
+  .nav-icon{font-size:18px;width:20px;text-align:center;}
+  .nav-section{font-size:11px;color:var(--muted);padding:16px 14px 6px;text-transform:uppercase;letter-spacing:1px;}
+  .sidebar-footer{margin-top:auto;}
+  .user-badge{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--border);}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;}
+  .user-info h4{font-size:13px;font-weight:600;}
+  .user-info p{font-size:11px;color:var(--muted);}
+  .logout-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:4px 8px;margin-top:8px;transition:color 0.3s;display:block;width:100%;text-align:left;}
+  .logout-btn:hover{color:var(--danger);}
+  .main{margin-left:240px;flex:1;padding:32px;}
+  .page-title{margin-bottom:32px;}
+  .page-title h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;}
+  .page-title p{color:var(--muted);font-size:14px;margin-top:4px;}
+
+  /* No-data banner */
+  .no-data-banner {
+    display: none; background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 14px; padding: 20px 24px; margin-bottom: 28px;
+    color: var(--warning); font-size: 14px;
+  }
+  .no-data-banner a { color: var(--accent); font-weight: 600; text-decoration: none; }
+
+  .ats-hero {
+    background: linear-gradient(135deg, rgba(108,99,255,0.15) 0%, rgba(139,92,246,0.05) 100%);
+    border: 1px solid rgba(108,99,255,0.25); border-radius: 20px; padding: 40px;
+    display: flex; align-items: center; gap: 40px; margin-bottom: 28px;
+  }
+  .big-ring { position: relative; flex-shrink: 0; }
+  svg.big-ring-svg { transform: rotate(-90deg); }
+  .big-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .big-ring-text .score { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; }
+  .big-ring-text .label { font-size: 13px; color: var(--muted); }
+  .ats-hero-info { flex: 1; }
+  .ats-hero-info h2 { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+  .ats-hero-info p { color: var(--muted); font-size: 15px; margin-bottom: 20px; }
+  .ats-badges { display: flex; gap: 10px; flex-wrap: wrap; }
+  .badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+  .badge-green { background: rgba(74,222,128,0.15); color: var(--success); }
+  .badge-blue { background: rgba(108,99,255,0.15); color: var(--accent); }
+  .badge-orange { background: rgba(251,191,36,0.15); color: var(--warning); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--danger); }
+
+  .categories-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+  .category-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+  .category-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .category-name { font-weight: 600; font-size: 14px; }
+  .category-score { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+  .bar-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 1.5s ease; }
+  .category-tips { margin-top: 12px; font-size: 12px; color: var(--muted); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 18px; }
+
+  .keyword-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kw { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; }
+  .kw-found { background: rgba(74,222,128,0.1); color: var(--success); border: 1px solid rgba(74,222,128,0.3); }
+  .kw-missing { background: rgba(248,113,113,0.1); color: var(--danger); border: 1px solid rgba(248,113,113,0.3); }
+
+  .suggestion-item {
+    display: flex; gap: 14px; padding: 14px 0;
+    border-bottom: 1px solid var(--border); align-items: flex-start;
+  }
+  .suggestion-item:last-child { border-bottom: none; }
+  .sug-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .sug-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .sug-text { font-size: 13px; color: var(--muted); }
+  .priority { font-size: 10px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+  .p-high { background: rgba(248,113,113,0.15); color: var(--danger); }
+  .p-med { background: rgba(251,191,36,0.15); color: var(--warning); }
+  .p-low { background: rgba(74,222,128,0.15); color: var(--success); }
+
+  .btn-primary { padding: 13px 28px; background: var(--accent); border: none; border-radius: 12px; color: white; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+  .btn-primary:hover { background: #7c73ff; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo">R</div>
+    <span>ResumeAI</span>
+  </div>
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+  <a class="nav-item" href="upload-resume.html"><span class="nav-icon">📄</span> Upload Resume</a>
+  <a class="nav-item active" href="ats-score.html"><span class="nav-icon">📊</span> ATS Score</a>
+  <a class="nav-item" href="job-match.html"><span class="nav-icon">🎯</span> Job Matches</a>
+  <div class="nav-section">My Profile</div>
+  <a class="nav-item" href="#"><span class="nav-icon">🛠️</span> Skills</a>
+  <a class="nav-item" href="#"><span class="nav-icon">🎓</span> Education</a>
+  <a class="nav-item" href="#"><span class="nav-icon">⚙️</span> Settings</a>
+  <div class="sidebar-footer">
+    <div class="user-badge">
+      <div class="avatar" id="avatar">R</div>
+      <div class="user-info"><h4 id="uname">Rahul</h4><p>Job Seeker</p></div>
+    </div>
+    <button class="logout-btn" onclick="localStorage.clear();location.href='login.html'">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title">
+    <h1>📊 ATS Score Analysis</h1>
+    <p>Applicant Tracking System score — how well your resume passes automated screening</p>
+  </div>
+
+  <!-- Banner if no resume uploaded -->
+  <div class="no-data-banner" id="noDataBanner">
+    ⚠️ No resume analyzed yet. <a href="upload-resume.html">Upload your resume</a> to see your real ATS score and personalized analysis.
+  </div>
+
+  <div class="ats-hero">
+    <div class="big-ring">
+      <svg class="big-ring-svg" width="160" height="160" viewBox="0 0 160 160">
+        <circle cx="80" cy="80" r="68" fill="none" stroke="var(--border)" stroke-width="12"/>
+        <circle cx="80" cy="80" r="68" fill="none" stroke="var(--success)" stroke-width="12"
+          stroke-dasharray="427" id="bigRingCircle"
+          stroke-dashoffset="427" stroke-linecap="round"
+          style="transition:stroke-dashoffset 2s ease"/>
+      </svg>
+      <div class="big-ring-text">
+        <span class="score" id="heroScore">—</span>
+        <span class="label">ATS Score</span>
+      </div>
+    </div>
+    <div class="ats-hero-info">
+      <h2 id="heroHeading">Loading analysis...</h2>
+      <p id="heroDesc">Please wait while we load your resume analysis.</p>
+      <div class="ats-badges" id="heroBadges"></div>
+    </div>
+  </div>
+
+  <div class="categories-grid">
+    <div class="category-card">
+      <div class="category-top">
+        <div class="category-name">📝 Formatting</div>
+        <div class="category-score" id="fmtScore">—</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="fmtBar" style="width:0%"></div></div>
+      <div class="category-tips" id="fmtTip">Analyzing...</div>
+    </div>
+    <div class="category-card">
+      <div class="category-top">
+        <div class="category-name">🔑 Keywords</div>
+        <div class="category-score" id="kwScore">—</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="kwBar" style="width:0%"></div></div>
+      <div class="category-tips" id="kwTip">Analyzing...</div>
+    </div>
+    <div class="category-card">
+      <div class="category-top">
+        <div class="category-name">🧠 Summary</div>
+        <div class="category-score" id="sumScore">—</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="sumBar" style="width:0%"></div></div>
+      <div class="category-tips" id="sumTip">Analyzing...</div>
+    </div>
+    <div class="category-card">
+      <div class="category-top">
+        <div class="category-name">💼 Experience</div>
+        <div class="category-score" id="expScore">—</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="expBar" style="width:0%"></div></div>
+      <div class="category-tips" id="expTip">Analyzing...</div>
+    </div>
+    <div class="category-card">
+      <div class="category-top">
+        <div class="category-name">🎓 Education</div>
+        <div class="category-score" id="eduScore">—</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="eduBar" style="width:0%"></div></div>
+      <div class="category-tips" id="eduTip">Analyzing...</div>
+    </div>
+    <div class="category-card">
+      <div class="category-top">
+        <div class="category-name">🛠️ Skills</div>
+        <div class="category-score" id="sklScore">—</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="sklBar" style="width:0%"></div></div>
+      <div class="category-tips" id="sklTip">Analyzing...</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">🔑 Keyword Analysis</div>
+      <div style="margin-bottom:12px;font-size:13px;color:var(--muted)">✅ Keywords found in your resume:</div>
+      <div class="keyword-grid" id="kwFound" style="margin-bottom:18px;"></div>
+      <div style="margin-bottom:12px;font-size:13px;color:var(--muted)">❌ Missing keywords (add these):</div>
+      <div class="keyword-grid" id="kwMissing"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💡 Improvement Suggestions</div>
+      <div id="suggestionsContainer"></div>
+    </div>
+  </div>
+
+  <div style="text-align:center;">
+    <button class="btn-primary" onclick="location.href='job-match.html'">🎯 See Matching Jobs →</button>
+  </div>
+</div>
+
+<script>
+  const n = localStorage.getItem('userName') || 'Rahul';
+  document.getElementById('uname').textContent = n;
+  document.getElementById('avatar').textContent = n.charAt(0).toUpperCase();
+
+  function scoreColor(s) {
+    return s >= 80 ? 'var(--success)' : s >= 60 ? 'var(--warning)' : 'var(--danger)';
+  }
+  function scoreIcon(s) {
+    return s >= 80 ? '✅' : s >= 60 ? '⚠️' : '❌';
+  }
+  function priorityClass(p) {
+    if (!p) return 'p-med';
+    const pl = p.toLowerCase();
+    return pl === 'high' ? 'p-high' : pl === 'low' ? 'p-low' : 'p-med';
+  }
+
+  const raw = localStorage.getItem('resumeAnalysis');
+  if (!raw) {
+    document.getElementById('noDataBanner').style.display = 'block';
+    // Show fallback demo data
+    loadData({
+      atsScore:82, atsLabel:'Good Score',
+      formatting:90, keywords:78, summary:65, experience:85, education:95, skills:75,
+      formattingTip:'✅ Clean sections, proper headers — great!',
+      keywordsTip:'⚠️ Add: TypeScript, Docker, CI/CD, Agile',
+      summaryTip:'❌ Make summary 3-5 lines with strong action verbs',
+      experienceTip:'✅ Good project descriptions with measurable results',
+      educationTip:'✅ Degree, college, GPA — all present',
+      skillsTip:'⚠️ Add missing technical skills',
+      skillsFound:['HTML','CSS','JavaScript','React','Python','Git','REST API','Bootstrap','MySQL'],
+      skillsMissing:['TypeScript','Node.js','Docker','AWS','Agile','CI/CD'],
+      suggestions:[
+        {icon:'📝',title:'Improve Summary Section',desc:'Write a 3-4 line summary with action verbs like "Built", "Developed", "Designed" and mention your target role clearly.',priority:'High'},
+        {icon:'🛠️',title:'Add Missing Skills',desc:'Add TypeScript, Node.js, Docker to your skills section.',priority:'High'},
+        {icon:'📏',title:'Keep Resume to 1 Page',desc:'For freshers, 1-page resume is ideal. Remove unnecessary details.',priority:'Medium'},
+        {icon:'🔢',title:'Add Quantified Results',desc:'Use numbers: "Improved page speed by 40%", "Built app with 500+ users"',priority:'Low'},
+      ]
+    }, true);
+  } else {
+    loadData(JSON.parse(raw), false);
+  }
+
+  function loadData(d, isDemo) {
+    const score = d.atsScore || 0;
+    const col = scoreColor(score);
+
+    // Hero ring animation
+    document.getElementById('heroScore').textContent = score + '%';
+    document.getElementById('heroScore').style.color = col;
+    const circle = document.getElementById('bigRingCircle');
+    circle.style.stroke = col;
+    setTimeout(() => {
+      circle.style.strokeDashoffset = 427 - (427 * score / 100);
+    }, 300);
+
+    // Hero heading
+    const emoji = score >= 80 ? '🎉' : score >= 60 ? '👍' : '⚠️';
+    document.getElementById('heroHeading').textContent =
+      score >= 80 ? `Good Score! ${emoji} You're ATS-Friendly` :
+      score >= 60 ? `${emoji} Almost There — Needs a Few Fixes` :
+      `${emoji} Needs Improvement — Let's Fix This`;
+    document.getElementById('heroDesc').textContent =
+      isDemo
+        ? 'Upload your resume for a personalized analysis. Showing demo data below.'
+        : (score >= 80
+          ? `Your resume passes most ATS filters. Focus on adding missing keywords to push it higher.`
+          : `Your resume needs some work to pass ATS filters. Follow the suggestions below.`);
+
+    // Badges
+    const badgesEl = document.getElementById('heroBadges');
+    const cats = [
+      { label: 'Format', val: d.formatting }, { label: 'Keywords', val: d.keywords },
+      { label: 'Summary', val: d.summary }, { label: 'Skills', val: d.skills }
+    ];
+    badgesEl.innerHTML = cats.map(c => {
+      const cl = c.val >= 80 ? 'badge-green' : c.val >= 60 ? 'badge-orange' : 'badge-red';
+      const ic = c.val >= 80 ? '✅' : '⚠️';
+      return `<span class="badge ${cl}">${ic} ${c.label}: ${c.val}%</span>`;
+    }).join('');
+
+    // Category cards
+    function setCategory(prefix, val, tip) {
+      const col = scoreColor(val);
+      document.getElementById(prefix + 'Score').textContent = val + '%';
+      document.getElementById(prefix + 'Score').style.color = col;
+      document.getElementById(prefix + 'Bar').style.width = val + '%';
+      document.getElementById(prefix + 'Bar').style.background = col;
+      document.getElementById(prefix + 'Tip').textContent = tip || (scoreIcon(val) + ' Score: ' + val + '%');
+    }
+    setCategory('fmt', d.formatting, d.formattingTip);
+    setCategory('kw', d.keywords, d.keywordsTip);
+    setCategory('sum', d.summary, d.summaryTip);
+    setCategory('exp', d.experience, d.experienceTip);
+    setCategory('edu', d.education, d.educationTip);
+    setCategory('skl', d.skills, d.skillsTip);
+
+    // Keywords
+    const kwFoundEl = document.getElementById('kwFound');
+    kwFoundEl.innerHTML = (d.skillsFound || []).map(s => `<span class="kw kw-found">${s}</span>`).join('');
+
+    const kwMissingEl = document.getElementById('kwMissing');
+    kwMissingEl.innerHTML = (d.skillsMissing || []).map(s => `<span class="kw kw-missing">${s}</span>`).join('');
+
+    // Suggestions
+    const sugEl = document.getElementById('suggestionsContainer');
+    sugEl.innerHTML = (d.suggestions || []).map(s => `
+      <div class="suggestion-item">
+        <div class="sug-icon">${s.icon || '💡'}</div>
+        <div>
+          <div class="sug-title">${s.title} <span class="priority ${priorityClass(s.priority)}">${s.priority || 'Medium'}</span></div>
+          <div class="sug-text">${s.desc}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+</script>
+<script type="module" src="firebase.js"></script>
+</body>
+</html>

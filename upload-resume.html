@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeAI - Upload Resume</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0a0a0f;--sidebar:#0e0e16;--card:#12121a;--border:#1e1e2e;--accent:#6c63ff;--text:#e8e8f0;--muted:#6b6b8a;--success:#4ade80;--warning:#fbbf24;--danger:#f87171; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;}
+  .sidebar{width:240px;background:var(--sidebar);border-right:1px solid var(--border);padding:28px 20px;display:flex;flex-direction:column;gap:8px;position:fixed;left:0;top:0;bottom:0;z-index:10;}
+  .sidebar-brand{display:flex;align-items:center;gap:12px;padding:0 8px;margin-bottom:28px;}
+  .sidebar-logo{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;box-shadow:0 0 20px rgba(108,99,255,0.4);}
+  .sidebar-brand span{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;cursor:pointer;transition:all 0.3s;text-decoration:none;color:var(--muted);font-size:14px;}
+  .nav-item:hover{background:rgba(108,99,255,0.08);color:var(--text);}
+  .nav-item.active{background:rgba(108,99,255,0.15);color:var(--accent);font-weight:600;}
+  .nav-icon{font-size:18px;width:20px;text-align:center;}
+  .nav-section{font-size:11px;color:var(--muted);padding:16px 14px 6px;text-transform:uppercase;letter-spacing:1px;}
+  .sidebar-footer{margin-top:auto;}
+  .user-badge{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--border);}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;}
+  .user-info h4{font-size:13px;font-weight:600;}
+  .user-info p{font-size:11px;color:var(--muted);}
+  .logout-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:4px 8px;margin-top:8px;transition:color 0.3s;display:block;width:100%;text-align:left;}
+  .logout-btn:hover{color:var(--danger);}
+  .main{margin-left:240px;flex:1;padding:32px;}
+  .page-title{margin-bottom:32px;}
+  .page-title h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;}
+  .page-title p{color:var(--muted);font-size:14px;margin-top:4px;}
+  .upload-area{border:2px dashed var(--border);border-radius:20px;padding:60px 40px;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--card);margin-bottom:28px;}
+  .upload-area:hover,.upload-area.drag-over{border-color:var(--accent);background:rgba(108,99,255,0.05);}
+  .upload-icon{font-size:56px;margin-bottom:20px;display:block;}
+  .upload-area h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:10px;}
+  .upload-area p{color:var(--muted);font-size:14px;margin-bottom:24px;}
+  .upload-formats{display:flex;gap:10px;justify-content:center;margin-bottom:24px;}
+  .format-badge{padding:6px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);}
+  .btn-upload{display:inline-block;padding:13px 32px;background:linear-gradient(135deg,var(--accent),#8b5cf6);border:none;border-radius:12px;color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s;}
+  .btn-upload:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(108,99,255,0.45);}
+  #fileInput{display:none;}
+  .file-preview{display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;}
+  .file-preview.visible{display:block;}
+  .file-info{display:flex;align-items:center;gap:16px;}
+  .file-icon{font-size:40px;}
+  .file-details h3{font-size:16px;font-weight:600;margin-bottom:4px;}
+  .file-details p{font-size:13px;color:var(--muted);}
+  .file-actions{margin-left:auto;display:flex;gap:10px;}
+  .progress-section{display:none;margin-bottom:24px;}
+  .progress-section.visible{display:block;}
+  .progress-title{font-size:15px;font-weight:600;margin-bottom:16px;}
+  .progress-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .progress-step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;transition:all 0.5s;}
+  .progress-step.done{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.05);}
+  .progress-step.active{border-color:var(--accent);background:rgba(108,99,255,0.1);animation:pulse 1s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+  .step-icon{font-size:28px;margin-bottom:10px;}
+  .step-name{font-size:13px;font-weight:600;margin-bottom:4px;}
+  .step-status{font-size:11px;color:var(--muted);}
+  .step-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:10px;}
+  .step-fill{height:100%;background:var(--success);border-radius:2px;width:0;transition:width 0.8s ease;}
+  .results-section{display:none;}
+  .results-section.visible{display:block;}
+  .results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+  .result-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;}
+  .result-score{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;margin-bottom:6px;}
+  .result-label{font-size:14px;color:var(--muted);margin-bottom:4px;}
+  .result-sub{font-size:12px;}
+  .parsed-data{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;}
+  .parsed-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:20px;}
+  .parsed-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .parsed-section h4{font-size:13px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;}
+  .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .info-row:last-child{border-bottom:none;}
+  .info-key{color:var(--muted);}
+  .skill-pill{display:inline-block;padding:5px 12px;border-radius:20px;font-size:12px;margin:3px;}
+  .skill-green{background:rgba(74,222,128,0.1);color:var(--success);border:1px solid rgba(74,222,128,0.3);}
+  .skill-red{background:rgba(248,113,113,0.1);color:var(--danger);border:1px solid rgba(248,113,113,0.3);}
+  .btn-analyze{padding:13px 28px;background:var(--accent);border:none;border-radius:12px;color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s;margin-top:16px;}
+  .btn-analyze:hover{background:#7c73ff;transform:translateY(-2px);}
+  .btn-secondary{padding:13px 28px;border:1px solid var(--border);border-radius:12px;background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all 0.3s;margin-top:16px;margin-left:10px;}
+  .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+  .error-box{display:none;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:12px;padding:16px 20px;margin-bottom:20px;color:var(--danger);font-size:14px;}
+  .error-box.visible{display:block;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo">R</div>
+    <span>ResumeAI</span>
+  </div>
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+  <a class="nav-item active" href="upload-resume.html"><span class="nav-icon">📄</span> Upload Resume</a>
+  <a class="nav-item" href="ats-score.html"><span class="nav-icon">📊</span> ATS Score</a>
+  <a class="nav-item" href="job-match.html"><span class="nav-icon">🎯</span> Job Matches</a>
+  <div class="nav-section">My Profile</div>
+  <a class="nav-item" href="#"><span class="nav-icon">🛠️</span> Skills</a>
+  <a class="nav-item" href="#"><span class="nav-icon">🎓</span> Education</a>
+  <a class="nav-item" href="#"><span class="nav-icon">⚙️</span> Settings</a>
+  <div class="sidebar-footer">
+    <div class="user-badge">
+      <div class="avatar" id="avatar">R</div>
+      <div class="user-info"><h4 id="uname">Rahul</h4><p>Job Seeker</p></div>
+    </div>
+    <button class="logout-btn" onclick="localStorage.clear();location.href='login.html'">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title">
+    <h1>📄 Upload Your Resume</h1>
+    <p>Upload your resume — system will analyze skills, ATS score & job matches instantly</p>
+  </div>
+
+  <div class="upload-area" id="uploadArea"
+    onclick="document.getElementById('fileInput').click()"
+    ondragover="event.preventDefault();this.classList.add('drag-over')"
+    ondragleave="this.classList.remove('drag-over')"
+    ondrop="handleDrop(event)">
+    <span class="upload-icon">☁️</span>
+    <h2>Drop your resume here</h2>
+    <p>Supports PDF and TXT files — reads actual content from your resume</p>
+    <div class="upload-formats">
+      <span class="format-badge">📄 PDF</span>
+      <span class="format-badge">📝 TXT</span>
+    </div>
+    <button class="btn-upload" onclick="event.stopPropagation();document.getElementById('fileInput').click()">
+      📁 Browse File
+    </button>
+    <input type="file" id="fileInput" accept=".pdf,.txt" onchange="handleFile(event)">
+  </div>
+
+  <div class="file-preview" id="filePreview">
+    <div class="file-info">
+      <div class="file-icon">📄</div>
+      <div class="file-details">
+        <h3 id="fileName">resume.pdf</h3>
+        <p id="fileSize">—</p>
+      </div>
+      <div class="file-actions">
+        <button class="btn-analyze" onclick="startAnalysis()">🔍 Analyze Resume</button>
+        <button class="btn-secondary" onclick="resetUpload()">✕ Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="error-box" id="errorBox">
+    ⚠️ <span id="errorMsg">Could not read file.</span>
+  </div>
+
+  <div class="progress-section" id="progressSection">
+    <div class="progress-title">🔄 Analyzing your resume...</div>
+    <div class="progress-steps">
+      <div class="progress-step" id="step1">
+        <div class="step-icon">📤</div>
+        <div class="step-name">Upload</div>
+        <div class="step-status" id="st1">Waiting...</div>
+        <div class="step-bar"><div class="step-fill" id="sf1"></div></div>
+      </div>
+      <div class="progress-step" id="step2">
+        <div class="step-icon">📖</div>
+        <div class="step-name">Reading Text</div>
+        <div class="step-status" id="st2">Waiting...</div>
+        <div class="step-bar"><div class="step-fill" id="sf2"></div></div>
+      </div>
+      <div class="progress-step" id="step3">
+        <div class="step-icon">🤖</div>
+        <div class="step-name">AI Analysis</div>
+        <div class="step-status" id="st3">Waiting...</div>
+        <div class="step-bar"><div class="step-fill" id="sf3"></div></div>
+      </div>
+      <div class="progress-step" id="step4">
+        <div class="step-icon">🎯</div>
+        <div class="step-name">Matching Jobs</div>
+        <div class="step-status" id="st4">Waiting...</div>
+        <div class="step-bar"><div class="step-fill" id="sf4"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-section" id="resultsSection">
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-score" id="atsScoreDisplay" style="color:var(--success)">—</div>
+        <div class="result-label">ATS Score</div>
+        <div class="result-sub" id="atsScoreLabel" style="color:var(--success)">—</div>
+      </div>
+      <div class="result-card">
+        <div class="result-score" id="jobMatchCount" style="color:var(--accent)">—</div>
+        <div class="result-label">Job Matches Found</div>
+        <div class="result-sub" style="color:var(--muted)">Based on your skills</div>
+      </div>
+      <div class="result-card">
+        <div class="result-score" id="skillsCount" style="color:var(--warning)">—</div>
+        <div class="result-label">Skills Detected</div>
+        <div class="result-sub" id="skillsGapLabel" style="color:var(--muted)">From your resume</div>
+      </div>
+    </div>
+
+    <div class="parsed-data">
+      <div class="parsed-title">📋 Parsed Resume Data</div>
+      <div class="parsed-grid">
+        <div class="parsed-section">
+          <h4>Personal Info</h4>
+          <div class="info-row"><span class="info-key">Name</span><span id="parsedName">—</span></div>
+          <div class="info-row"><span class="info-key">Email</span><span id="parsedEmail">—</span></div>
+          <div class="info-row"><span class="info-key">Phone</span><span id="parsedPhone">—</span></div>
+          <div class="info-row"><span class="info-key">Location</span><span id="parsedLocation">—</span></div>
+          <br>
+          <h4>Education</h4>
+          <div class="info-row"><span class="info-key">Degree</span><span id="parsedDegree">—</span></div>
+          <div class="info-row"><span class="info-key">College</span><span id="parsedCollege">—</span></div>
+          <div class="info-row"><span class="info-key">Year</span><span id="parsedYear">—</span></div>
+          <div class="info-row"><span class="info-key">GPA/Score</span><span id="parsedGPA">—</span></div>
+        </div>
+        <div class="parsed-section">
+          <h4>Skills Detected ✅</h4>
+          <div id="skillsFound"></div>
+          <br>
+          <h4>Missing Skills ❌</h4>
+          <div id="skillsMissing"></div>
+          <br>
+          <h4>Experience</h4>
+          <div class="info-row"><span class="info-key">Internships</span><span id="parsedInternships">—</span></div>
+          <div class="info-row"><span class="info-key">Projects</span><span id="parsedProjects">—</span></div>
+          <div class="info-row"><span class="info-key">Certifications</span><span id="parsedCerts">—</span></div>
+        </div>
+      </div>
+      <div style="margin-top:20px;text-align:center;">
+        <button class="btn-analyze" onclick="location.href='ats-score.html'">📊 View Full ATS Report</button>
+        <button class="btn-secondary" onclick="location.href='job-match.html'">🎯 See Job Matches</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const n = localStorage.getItem('userName') || 'Rahul';
+  document.getElementById('uname').textContent = n;
+  document.getElementById('avatar').textContent = n.charAt(0).toUpperCase();
+
+  let selectedFile = null;
+
+  function handleFile(e) {
+    var f = e.target.files[0];
+    if (!f) return;
+    selectedFile = f;
+    showFilePreview(f);
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('uploadArea').classList.remove('drag-over');
+    var f = e.dataTransfer.files[0];
+    if (!f) return;
+    selectedFile = f;
+    showFilePreview(f);
+  }
+
+  function showFilePreview(f) {
+    document.getElementById('fileName').textContent = f.name;
+    document.getElementById('fileSize').textContent = (f.size / 1024).toFixed(0) + ' KB';
+    document.getElementById('filePreview').classList.add('visible');
+    document.getElementById('uploadArea').style.display = 'none';
+    document.getElementById('errorBox').classList.remove('visible');
+  }
+
+  function resetUpload() {
+    selectedFile = null;
+    document.getElementById('filePreview').classList.remove('visible');
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('resultsSection').classList.remove('visible');
+    document.getElementById('progressSection').classList.remove('visible');
+    document.getElementById('errorBox').classList.remove('visible');
+    document.getElementById('fileInput').value = '';
+    resetSteps();
+  }
+
+  function extractText(file) {
+    return new Promise(function(resolve, reject) {
+      var name = file.name.toLowerCase();
+      if (name.endsWith('.pdf')) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var typedArray = new Uint8Array(e.target.result);
+          pdfjsLib.getDocument({ data: typedArray }).promise.then(function(pdf) {
+            var allText = '';
+            var pagePromises = [];
+            for (var i = 1; i <= pdf.numPages; i++) {
+              pagePromises.push(
+                pdf.getPage(i).then(function(page) {
+                  return page.getTextContent().then(function(content) {
+                    return content.items.map(function(item) { return item.str; }).join(' ');
+                  });
+                })
+              );
+            }
+            Promise.all(pagePromises).then(function(pages) {
+              resolve(pages.join('\n'));
+            });
+          }).catch(reject);
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      } else {
+        var reader2 = new FileReader();
+        reader2.onload = function(e) { resolve(e.target.result); };
+        reader2.onerror = reject;
+        reader2.readAsText(file);
+      }
+    });
+  }
+
+  function startAnalysis() {
+    if (!selectedFile) { alert('Please upload a file first!'); return; }
+
+    document.getElementById('filePreview').style.display = 'none';
+    document.getElementById('progressSection').classList.add('visible');
+    document.getElementById('resultsSection').classList.remove('visible');
+    document.getElementById('errorBox').classList.remove('visible');
+
+    stepActive(1);
+
+    setTimeout(function() {
+      stepDone(1, 'Upload complete ✅');
+      stepActive(2);
+
+      extractText(selectedFile).then(function(text) {
+        if (!text || text.trim().length < 30) {
+          showError('Not enough text found. Please use a TXT file or a text-based PDF (not a scanned image).');
+          resetSteps();
+          return;
+        }
+
+        stepDone(2, 'Text extracted ✅');
+        stepActive(3);
+
+        setTimeout(function() {
+          var result = analyzeResume(text);
+          stepDone(3, 'Analysis done ✅');
+          stepActive(4);
+
+          setTimeout(function() {
+            stepDone(4, result.jobMatches + ' jobs found ✅');
+
+            setTimeout(function() {
+              document.getElementById('progressSection').classList.remove('visible');
+              localStorage.setItem('resumeAnalysis', JSON.stringify(result));
+              localStorage.setItem('resumeUploaded', 'true');
+              renderResults(result);
+            }, 400);
+          }, 700);
+        }, 900);
+
+      }).catch(function(err) {
+        showError('Could not read file. Try saving your resume as a TXT file and uploading that.');
+        resetSteps();
+      });
+
+    }, 500);
+  }
+
+  function analyzeResume(text) {
+    var t = text.toLowerCase();
+
+    var allSkills = [
+      'html','css','javascript','typescript','react','angular','vue','svelte',
+      'next.js','nuxt.js','node.js','express','django','flask','fastapi','spring','laravel',
+      'python','java','c++','c#','php','ruby','golang','rust','kotlin','swift',
+      'sql','mysql','postgresql','mongodb','firebase','redis','sqlite',
+      'git','github','docker','kubernetes','aws','azure','linux','bash',
+      'rest api','graphql','redux','tailwind','bootstrap','sass','webpack','vite',
+      'figma','adobe xd','photoshop',
+      'machine learning','deep learning','tensorflow','pytorch','pandas','numpy',
+      'flutter','react native','android','ios',
+      'agile','scrum','jira','postman','selenium','jest','ci/cd','devops',
+      'excel','tableau','power bi'
+    ];
+
+    var skillsFound = [];
+    allSkills.forEach(function(skill) {
+      var check = t.includes(skill) ||
+                  t.includes(skill.replace('.','')) ||
+                  t.includes(skill.replace(' ','')) ||
+                  t.includes(skill.replace('/',''));
+      if (check) {
+        var label = skill.split(' ').map(function(w) {
+          return w.charAt(0).toUpperCase() + w.slice(1);
+        }).join(' ');
+        skillsFound.push(label);
+      }
+    });
+
+    // Remove duplicates
+    var seen = {};
+    skillsFound = skillsFound.filter(function(s) {
+      if (seen[s]) return false;
+      seen[s] = true;
+      return true;
+    });
+
+    // Suggest missing skills
+    var missingPool = {
+      'React': ['TypeScript','Next.Js','Redux','Node.Js','Graphql'],
+      'Python': ['Django','Flask','Pandas','Numpy','Machine Learning'],
+      'Java': ['Spring','Kotlin','Docker','Aws','Kubernetes'],
+      'Node.Js': ['TypeScript','Express','Mongodb','Docker','Aws'],
+      'Html': ['Css','Javascript','Bootstrap','React','Tailwind'],
+      'Mysql': ['Postgresql','Mongodb','Redis','Firebase'],
+      'Git': ['Github','Docker','Ci/Cd','Linux','Agile'],
+      'Flutter': ['Firebase','Rest Api','Android','Ios'],
+      'Machine Learning': ['Tensorflow','Pytorch','Pandas','Numpy']
+    };
+
+    var missingSkills = [];
+    skillsFound.forEach(function(skill) {
+      var suggestions = missingPool[skill] || [];
+      suggestions.forEach(function(s) {
+        if (skillsFound.indexOf(s) === -1 && missingSkills.indexOf(s) === -1) {
+          missingSkills.push(s);
+        }
+      });
+    });
+
+    if (missingSkills.length === 0) {
+      missingSkills = ['Docker','Aws','Ci/Cd','TypeScript','Agile','Postgresql'];
+    }
+    missingSkills = missingSkills.slice(0, 6);
+
+    // Personal info extraction
+    var emailMatch  = text.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
+    var phoneMatch  = text.match(/(\+?91[\s\-]?)?[6-9]\d{9}/);
+    var nameMatch   = text.match(/^([A-Z][a-z]+(?: [A-Z][a-z]+)+)/m);
+
+    var cities = ['ahmedabad','surat','vadodara','rajkot','gandhinagar','mumbai','pune',
+      'bangalore','bengaluru','hyderabad','chennai','delhi','kolkata','noida','gurgaon','indore','jaipur'];
+    var location = 'Not found';
+    for (var ci = 0; ci < cities.length; ci++) {
+      if (t.includes(cities[ci])) {
+        location = cities[ci].charAt(0).toUpperCase() + cities[ci].slice(1);
+        break;
+      }
+    }
+
+    var degreeMap = [
+      { keys: ['b.tech','btech','bachelor of technology'], label: 'B.Tech' },
+      { keys: ['b.e.','bachelor of engineering'], label: 'B.E.' },
+      { keys: ['m.tech','mtech'], label: 'M.Tech' },
+      { keys: ['mba'], label: 'MBA' },
+      { keys: ['bca'], label: 'BCA' },
+      { keys: ['mca'], label: 'MCA' },
+      { keys: ['b.sc','bsc','bachelor of science'], label: 'B.Sc' },
+      { keys: ['m.sc','msc'], label: 'M.Sc' }
+    ];
+    var degree = 'Not found';
+    for (var di = 0; di < degreeMap.length; di++) {
+      var found = false;
+      for (var ki = 0; ki < degreeMap[di].keys.length; ki++) {
+        if (t.includes(degreeMap[di].keys[ki])) { found = true; break; }
+      }
+      if (found) { degree = degreeMap[di].label; break; }
+    }
+
+    var cgpaMatch   = text.match(/cgpa[:\s]*([0-9.]+)/i) || text.match(/gpa[:\s]*([0-9.]+)/i);
+    var percentMatch = text.match(/(\d{2,3}(?:\.\d+)?)\s*%/);
+    var gpa = 'Not found';
+    if (cgpaMatch) gpa = cgpaMatch[1] + ' / 10';
+    else if (percentMatch) gpa = percentMatch[1] + '%';
+
+    var yearMatch   = text.match(/20(1[5-9]|2[0-9])\s*[-]\s*20(1[5-9]|2[0-9]|[3-9][0-9])/);
+    var singleYear  = text.match(/20(2[2-9]|3[0-5])/);
+    var year = yearMatch ? yearMatch[0] : (singleYear ? singleYear[0] : 'Not found');
+
+    var collegeMatch = text.match(/([A-Z][A-Za-z\s]+(?:University|College|Institute|Technology|Engineering)[A-Za-z\s,]*)/);
+
+    var internshipCount = (t.match(/intern/gi) || []).length;
+    var projectCount    = Math.max((t.match(/project/gi) || []).length - 1, 0);
+    var certCount       = (t.match(/certif/gi) || []).length;
+
+    // Scoring
+    var sectionWords = ['experience','education','skills','projects','summary','objective','contact','achievements'];
+    var hasSections  = sectionWords.filter(function(s) { return t.includes(s); }).length;
+    var formatting   = Math.min(50 + hasSections * 6, 97);
+    var keywords     = Math.min(Math.round((skillsFound.length / 8) * 100), 97);
+    var hasSummary   = t.includes('summary') || t.includes('objective') || t.includes('profile');
+    var summary      = hasSummary ? 78 : 42;
+    var hasNumbers   = /\d+%|\d+\+|\d+ (users|clients|projects|apps)/i.test(text);
+    var experience   = Math.min(50 + (internshipCount * 10) + (projectCount * 8) + (hasNumbers ? 15 : 0), 97);
+    var education    = degree !== 'Not found' ? (gpa !== 'Not found' ? 95 : 78) : 55;
+    var skills       = Math.min(Math.round((skillsFound.length / 10) * 100), 97);
+    var atsScore     = Math.round(formatting*0.15 + keywords*0.25 + summary*0.15 + experience*0.2 + education*0.1 + skills*0.15);
+    var atsLabel     = atsScore >= 85 ? 'Excellent' : atsScore >= 70 ? 'Good' : atsScore >= 55 ? 'Average' : 'Needs Improvement';
+    var jobMatches   = Math.min(5 + skillsFound.length * 2, 28);
+
+    // Suggestions
+    var suggestions = [];
+    if (!hasSummary) {
+      suggestions.push({ icon:'📝', title:'Add a Summary Section', desc:'Write a 3-4 line professional summary at the top with action verbs like "Built", "Developed", "Designed".', priority:'High' });
+    } else {
+      suggestions.push({ icon:'📝', title:'Strengthen Your Summary', desc:'Make your summary 3-5 lines, mention your target role and top 3 skills clearly.', priority:'Medium' });
+    }
+    if (missingSkills.length > 0) {
+      suggestions.push({ icon:'🛠️', title:'Add Missing Skills', desc:'Consider learning and adding: ' + missingSkills.slice(0,4).join(', ') + ' to your resume.', priority:'High' });
+    }
+    if (!hasNumbers) {
+      suggestions.push({ icon:'🔢', title:'Add Quantified Results', desc:'Use numbers: "Improved speed by 40%", "Built app with 500+ users", "Reduced bugs by 30%".', priority:'Medium' });
+    }
+    if (projectCount < 2) {
+      suggestions.push({ icon:'💡', title:'Add More Projects', desc:'Add 2-3 personal or academic projects with GitHub links to strengthen your profile.', priority:'Medium' });
+    }
+    suggestions.push({ icon:'📏', title:'Keep Resume to 1 Page', desc:'For freshers, 1-page resume is ideal. Remove unnecessary filler content.', priority:'Low' });
+
+    return {
+      atsScore: atsScore,
+      atsLabel: atsLabel,
+      jobMatches: jobMatches,
+      name: nameMatch ? nameMatch[0] : 'Not found',
+      email: emailMatch ? emailMatch[0] : 'Not found',
+      phone: phoneMatch ? phoneMatch[0] : 'Not found',
+      location: location,
+      degree: degree,
+      college: collegeMatch ? collegeMatch[0].trim().substring(0,50) : 'Not found',
+      year: year,
+      gpa: gpa,
+      internships: internshipCount,
+      projects: projectCount,
+      certifications: certCount,
+      skillsFound: skillsFound,
+      skillsMissing: missingSkills,
+      formatting: formatting, keywords: keywords, summary: summary,
+      experience: experience, education: education, skills: skills,
+      formattingTip: hasSections >= 5 ? '✅ Good section structure detected' : '⚠️ Add clear sections: Skills, Experience, Education, Projects',
+      keywordsTip: skillsFound.length >= 8 ? '✅ Good keyword density' : '⚠️ Add more technical skills to your resume',
+      summaryTip: hasSummary ? '✅ Summary section found' : '❌ No summary found — add a professional summary!',
+      experienceTip: hasNumbers ? '✅ Quantified results found' : '⚠️ Add numbers/metrics to your experience',
+      educationTip: degree !== 'Not found' ? '✅ Education details found' : '⚠️ Mention degree and college name clearly',
+      skillsTip: skillsFound.length >= 10 ? '✅ Strong skills section' : '⚠️ Add more skills: ' + missingSkills.slice(0,3).join(', '),
+      suggestions: suggestions.slice(0, 5)
+    };
+  }
+
+  function renderResults(d) {
+    var col = d.atsScore >= 80 ? 'var(--success)' : d.atsScore >= 60 ? 'var(--warning)' : 'var(--danger)';
+
+    document.getElementById('atsScoreDisplay').textContent = d.atsScore + '%';
+    document.getElementById('atsScoreDisplay').style.color = col;
+    document.getElementById('atsScoreLabel').textContent = d.atsLabel;
+    document.getElementById('atsScoreLabel').style.color = col;
+    document.getElementById('jobMatchCount').textContent = d.jobMatches;
+    document.getElementById('skillsCount').textContent = d.skillsFound.length;
+    document.getElementById('skillsGapLabel').textContent = '+' + d.skillsMissing.length + ' skills recommended';
+
+    document.getElementById('parsedName').textContent = d.name;
+    document.getElementById('parsedEmail').textContent = d.email;
+    document.getElementById('parsedPhone').textContent = d.phone;
+    document.getElementById('parsedLocation').textContent = d.location;
+    document.getElementById('parsedDegree').textContent = d.degree;
+    document.getElementById('parsedCollege').textContent = d.college;
+    document.getElementById('parsedYear').textContent = d.year;
+    document.getElementById('parsedGPA').textContent = d.gpa;
+    document.getElementById('parsedInternships').textContent = d.internships;
+    document.getElementById('parsedProjects').textContent = d.projects;
+    document.getElementById('parsedCerts').textContent = d.certifications;
+
+    document.getElementById('skillsFound').innerHTML = d.skillsFound.map(function(s) {
+      return '<span class="skill-pill skill-green">' + s + '</span>';
+    }).join('');
+
+    document.getElementById('skillsMissing').innerHTML = d.skillsMissing.map(function(s) {
+      return '<span class="skill-pill skill-red">' + s + '</span>';
+    }).join('');
+
+    document.getElementById('resultsSection').classList.add('visible');
+    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function stepActive(id) {
+    document.getElementById('step' + id).classList.add('active');
+    document.getElementById('st' + id).textContent = 'In progress...';
+  }
+  function stepDone(id, msg) {
+    document.getElementById('step' + id).classList.remove('active');
+    document.getElementById('step' + id).classList.add('done');
+    document.getElementById('st' + id).textContent = msg;
+    document.getElementById('sf' + id).style.width = '100%';
+  }
+  function resetSteps() {
+    for (var i = 1; i <= 4; i++) {
+      document.getElementById('step' + i).classList.remove('active', 'done');
+      document.getElementById('st' + i).textContent = 'Waiting...';
+      document.getElementById('sf' + i).style.width = '0';
+    }
+  }
+  function showError(msg) {
+    document.getElementById('progressSection').classList.remove('visible');
+    document.getElementById('filePreview').style.display = 'block';
+    document.getElementById('errorMsg').textContent = msg;
+    document.getElementById('errorBox').classList.add('visible');
+  }
+</script>
+<script type="module" src="firebase.js"></script>
+</body>
+</html>

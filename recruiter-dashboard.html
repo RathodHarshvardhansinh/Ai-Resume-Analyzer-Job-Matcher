@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeAI - Recruiter Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0f;--sidebar:#0d0d18;--card:#12121a;--border:#1e1e2e;--accent:#ff6584;--accent2:#6c63ff;--text:#e8e8f0;--muted:#6b6b8a;--success:#4ade80;--warning:#fbbf24;--danger:#f87171;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;}
+  .sidebar{width:240px;background:var(--sidebar);border-right:1px solid var(--border);padding:28px 20px;display:flex;flex-direction:column;gap:8px;position:fixed;left:0;top:0;bottom:0;z-index:10;}
+  .sidebar-brand{display:flex;align-items:center;gap:12px;padding:0 8px;margin-bottom:28px;}
+  .sidebar-logo{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;}
+  .sidebar-brand span{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;cursor:pointer;transition:all 0.3s;text-decoration:none;color:var(--muted);font-size:14px;}
+  .nav-item:hover{background:rgba(255,101,132,0.08);color:var(--text);}
+  .nav-item.active{background:rgba(255,101,132,0.15);color:var(--accent);font-weight:600;}
+  .nav-icon{font-size:18px;width:20px;text-align:center;}
+  .nav-section{font-size:11px;color:var(--muted);padding:16px 14px 6px;text-transform:uppercase;letter-spacing:1px;}
+  .sidebar-footer{margin-top:auto;}
+  .user-badge{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--border);}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#c84b6e);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;}
+  .user-info h4{font-size:13px;font-weight:600;}
+  .user-info p{font-size:11px;color:var(--muted);}
+  .logout-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:4px 8px;margin-top:8px;transition:color 0.3s;display:block;width:100%;text-align:left;}
+  .logout-btn:hover{color:var(--danger);}
+  .main{margin-left:240px;flex:1;padding:32px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;}
+  .page-title h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;}
+  .page-title p{color:var(--muted);font-size:14px;margin-top:4px;}
+  .recruiter-tag{background:rgba(255,101,132,0.15);color:var(--accent);border:1px solid rgba(255,101,132,0.3);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;}
+
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;transition:all 0.3s;}
+  .stat-card:hover{border-color:rgba(255,101,132,0.3);transform:translateY(-2px);}
+  .stat-icon{font-size:28px;margin-bottom:12px;}
+  .stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;}
+  .stat-label{font-size:12px;color:var(--muted);margin-top:4px;}
+
+  .content-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;}
+  .card-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
+  .card-title a{font-size:12px;color:var(--accent);text-decoration:none;font-family:'DM Sans',sans-serif;font-weight:400;}
+
+  .btn-post{padding:11px 22px;background:linear-gradient(135deg,var(--accent),#c84b6e);border:none;border-radius:12px;color:white;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.3s;}
+  .btn-post:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,101,132,0.4);}
+
+  .job-post{border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;transition:all 0.3s;}
+  .job-post:hover{border-color:rgba(255,101,132,0.3);}
+  .jp-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+  .jp-title{font-weight:600;font-size:15px;margin-bottom:4px;}
+  .jp-sub{font-size:13px;color:var(--muted);}
+  .badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+  .badge-active{background:rgba(74,222,128,0.15);color:var(--success);}
+  .badge-pending{background:rgba(251,191,36,0.15);color:var(--warning);}
+  .jp-stats{display:flex;gap:20px;margin-top:12px;}
+  .jp-stat{font-size:13px;color:var(--muted);}
+  .jp-stat span{color:var(--text);font-weight:600;}
+  .jp-actions{display:flex;gap:8px;margin-top:12px;}
+  .btn-sm{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.3s;border:1px solid var(--border);background:transparent;color:var(--text);}
+  .btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-sm-red:hover{border-color:var(--danger);color:var(--danger);}
+
+  .candidate-card{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+  .candidate-card:last-child{border-bottom:none;}
+  .cand-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;}
+  .cand-info{flex:1;}
+  .cand-name{font-weight:600;font-size:14px;margin-bottom:2px;}
+  .cand-role{font-size:12px;color:var(--muted);}
+  .cand-score{text-align:center;}
+  .cand-score-num{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--success);}
+  .cand-score-lbl{font-size:10px;color:var(--muted);}
+  .btn-view{padding:7px 14px;background:var(--accent);border:none;border-radius:8px;color:white;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.3s;}
+  .btn-view:hover{background:#e05570;}
+
+  /* Post Job Modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;}
+  .modal h2{font-family:'Syne',sans-serif;font-size:22px;margin-bottom:24px;}
+  .form-group{margin-bottom:16px;}
+  label.fl{display:block;font-size:13px;font-weight:500;margin-bottom:8px;color:var(--muted);}
+  input.fi,select.fi,textarea.fi{width:100%;padding:13px 16px;background:var(--bg);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;transition:all 0.3s;outline:none;}
+  input.fi:focus,select.fi:focus,textarea.fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,101,132,0.15);}
+  input.fi::placeholder,textarea.fi::placeholder{color:var(--muted);}
+  select.fi option{background:var(--card);}
+  textarea.fi{height:100px;resize:vertical;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .modal-footer{display:flex;gap:12px;margin-top:24px;}
+  .btn-full{flex:1;padding:13px;background:linear-gradient(135deg,var(--accent),#c84b6e);border:none;border-radius:12px;color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s;}
+  .btn-close{padding:13px 20px;border:1px solid var(--border);border-radius:12px;background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo">R</div>
+    <span>ResumeAI</span>
+  </div>
+  <a class="nav-item active" href="recruiter-dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+  <a class="nav-item" href="#" onclick="openPostModal()"><span class="nav-icon">➕</span> Post a Job</a>
+  <a class="nav-item" href="#"><span class="nav-icon">👥</span> Candidates</a>
+  <a class="nav-item" href="#"><span class="nav-icon">📋</span> Applications</a>
+  <div class="nav-section">Company</div>
+  <a class="nav-item" href="#"><span class="nav-icon">🏢</span> Company Profile</a>
+  <a class="nav-item" href="#"><span class="nav-icon">📊</span> Analytics</a>
+  <a class="nav-item" href="#"><span class="nav-icon">⚙️</span> Settings</a>
+  <div class="sidebar-footer">
+    <div class="user-badge">
+      <div class="avatar" id="avatar">H</div>
+      <div class="user-info"><h4 id="uname">HR Manager</h4><p>Recruiter</p></div>
+    </div>
+    <button class="logout-btn" onclick="localStorage.clear();location.href='login.html'">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="page-title">
+      <h1>Recruiter Dashboard 🏢</h1>
+      <p>Manage job postings and find the best candidates</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="recruiter-tag">🏢 Recruiter Portal</span>
+      <button class="btn-post" onclick="openPostModal()">➕ Post New Job</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">💼</div>
+      <div class="stat-value" style="color:var(--accent)">6</div>
+      <div class="stat-label">Active Job Posts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-value" style="color:var(--accent2)">142</div>
+      <div class="stat-label">Total Applicants</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-value" style="color:var(--warning)">28</div>
+      <div class="stat-label">Shortlisted</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-value" style="color:var(--success)">5</div>
+      <div class="stat-label">Hired</div>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">💼 Your Job Postings <a href="#">Manage All →</a></div>
+
+        <div class="job-post">
+          <div class="jp-top">
+            <div>
+              <div class="jp-title">Frontend Developer</div>
+              <div class="jp-sub">Full-Time • Ahmedabad • ₹8-12 LPA</div>
+            </div>
+            <span class="badge badge-active">🟢 Active</span>
+          </div>
+          <div class="jp-stats">
+            <div class="jp-stat">Views: <span>234</span></div>
+            <div class="jp-stat">Applied: <span>47</span></div>
+            <div class="jp-stat">Shortlisted: <span>8</span></div>
+          </div>
+          <div class="jp-actions">
+            <button class="btn-sm">👁️ View</button>
+            <button class="btn-sm">✏️ Edit</button>
+            <button class="btn-sm btn-sm-red">🗑️ Close</button>
+          </div>
+        </div>
+
+        <div class="job-post">
+          <div class="jp-top">
+            <div>
+              <div class="jp-title">React Developer</div>
+              <div class="jp-sub">Remote • ₹10-15 LPA</div>
+            </div>
+            <span class="badge badge-active">🟢 Active</span>
+          </div>
+          <div class="jp-stats">
+            <div class="jp-stat">Views: <span>189</span></div>
+            <div class="jp-stat">Applied: <span>63</span></div>
+            <div class="jp-stat">Shortlisted: <span>12</span></div>
+          </div>
+          <div class="jp-actions">
+            <button class="btn-sm">👁️ View</button>
+            <button class="btn-sm">✏️ Edit</button>
+            <button class="btn-sm btn-sm-red">🗑️ Close</button>
+          </div>
+        </div>
+
+        <div class="job-post">
+          <div class="jp-top">
+            <div>
+              <div class="jp-title">Python Backend Developer</div>
+              <div class="jp-sub">Hybrid • Bangalore • ₹12-16 LPA</div>
+            </div>
+            <span class="badge badge-pending">🟡 Draft</span>
+          </div>
+          <div class="jp-stats">
+            <div class="jp-stat">Views: <span>0</span></div>
+            <div class="jp-stat">Applied: <span>0</span></div>
+            <div class="jp-stat">Shortlisted: <span>0</span></div>
+          </div>
+          <div class="jp-actions">
+            <button class="btn-sm" style="color:var(--accent);border-color:var(--accent)">🚀 Publish</button>
+            <button class="btn-sm">✏️ Edit</button>
+            <button class="btn-sm btn-sm-red">🗑️ Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title">🌟 Top Candidates</div>
+        <div class="candidate-card">
+          <div class="cand-avatar">R</div>
+          <div class="cand-info">
+            <div class="cand-name">Rahul Sharma</div>
+            <div class="cand-role">Frontend Dev • B.Tech CSE</div>
+          </div>
+          <div class="cand-score">
+            <div class="cand-score-num">95%</div>
+            <div class="cand-score-lbl">Match</div>
+          </div>
+          <button class="btn-view">View</button>
+        </div>
+        <div class="candidate-card">
+          <div class="cand-avatar" style="background:linear-gradient(135deg,#ff6584,#c84b6e)">P</div>
+          <div class="cand-info">
+            <div class="cand-name">Priya Patel</div>
+            <div class="cand-role">React Dev • B.Tech IT</div>
+          </div>
+          <div class="cand-score">
+            <div class="cand-score-num">92%</div>
+            <div class="cand-score-lbl">Match</div>
+          </div>
+          <button class="btn-view">View</button>
+        </div>
+        <div class="candidate-card">
+          <div class="cand-avatar" style="background:linear-gradient(135deg,#4ade80,#16a34a)">A</div>
+          <div class="cand-info">
+            <div class="cand-name">Arjun Mehta</div>
+            <div class="cand-role">Full Stack • B.Tech CS</div>
+          </div>
+          <div class="cand-score">
+            <div class="cand-score-num">88%</div>
+            <div class="cand-score-lbl">Match</div>
+          </div>
+          <button class="btn-view">View</button>
+        </div>
+        <div class="candidate-card">
+          <div class="cand-avatar" style="background:linear-gradient(135deg,#fbbf24,#d97706)">N</div>
+          <div class="cand-info">
+            <div class="cand-name">Nisha Shah</div>
+            <div class="cand-role">UI Dev • B.Tech IT</div>
+          </div>
+          <div class="cand-score">
+            <div class="cand-score-num">85%</div>
+            <div class="cand-score-lbl">Match</div>
+          </div>
+          <button class="btn-view">View</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Post Job Modal -->
+<div class="modal-overlay" id="postModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2>➕ Post a New Job</h2>
+    <div class="form-group">
+      <label class="fl">Job Title *</label>
+      <input class="fi" type="text" placeholder="e.g. Frontend Developer">
+    </div>
+    <div class="grid2">
+      <div class="form-group">
+        <label class="fl">Company Name *</label>
+        <input class="fi" type="text" placeholder="Your Company">
+      </div>
+      <div class="form-group">
+        <label class="fl">Job Type *</label>
+        <select class="fi">
+          <option>Full-Time</option><option>Part-Time</option>
+          <option>Internship</option><option>Remote</option><option>Hybrid</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="form-group">
+        <label class="fl">Location</label>
+        <input class="fi" type="text" placeholder="City, State">
+      </div>
+      <div class="form-group">
+        <label class="fl">Salary Range</label>
+        <input class="fi" type="text" placeholder="₹8-12 LPA">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="form-group">
+        <label class="fl">Experience Required</label>
+        <select class="fi">
+          <option>Fresher (0 years)</option>
+          <option>0-1 Years</option><option>1-3 Years</option>
+          <option>3-5 Years</option><option>5+ Years</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="fl">Last Date to Apply</label>
+        <input class="fi" type="date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="fl">Required Skills (comma separated)</label>
+      <input class="fi" type="text" placeholder="React, JavaScript, HTML, CSS">
+    </div>
+    <div class="form-group">
+      <label class="fl">Job Description *</label>
+      <textarea class="fi" placeholder="Describe the role, responsibilities, and what you're looking for..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-full" onclick="postJob()">🚀 Post Job Now</button>
+      <button class="btn-close" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const n = localStorage.getItem('userName') || 'HR Manager';
+  document.getElementById('uname').textContent = n;
+  document.getElementById('avatar').textContent = n.charAt(0).toUpperCase();
+
+  function openPostModal() { document.getElementById('postModal').classList.add('show'); }
+  function closeModal() { document.getElementById('postModal').classList.remove('show'); }
+  function postJob() {
+    closeModal();
+    alert('🎉 Job posted successfully!\n\nYour job is now live and candidates can apply.');
+  }
+</script>
+</body>
+</html>
