@@ -40,7 +40,7 @@ resume-project/
 
 ---
 
-## 📖 Project Features (Teacher ko samjhao)
+## 📖 Project Features
 
 ### 👤 1. Login Page (login.html)
 - **Job Seeker** ya **Recruiter** select karo
@@ -105,12 +105,3 @@ resume-project/
 
 ---
 
-## 💡 Teacher ko Hindi mein kaise explain karein:
-
-**"Sir/Ma'am, yeh ek AI-based Resume Analyzer hai. Isme 2 types ke users hain — Job Seeker aur Recruiter."**
-
-**"Job Seeker apna resume upload karta hai, system uska ATS Score check karta hai jo batata hai ki resume kitna job-ready hai. Phir system automatically best matching jobs suggest karta hai."**
-
-**"Recruiter portal se companies naukri post kar sakti hain, aur best candidates dekhne mein help milti hai."**
-
-**"Frontend pure HTML, CSS, JavaScript se banaya hai — koi framework nahi. LocalStorage se data save hota hai."**
