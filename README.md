@@ -99,7 +99,7 @@ resume-project/
 ---
 
 ## 🔑 Test Login Credentials
-- **Any email + any password** kaam karega (college demo)
+- **Any email + any password** 
 - Job Seeker: Select "Job Seeker" role → Dashboard pe jayega
 - Recruiter: Select "Recruiter" role → Recruiter Dashboard pe jayega
 
